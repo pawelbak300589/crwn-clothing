@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import FormInput from "../form-input/form-input.component";
 import CustomButton from "../custom-button/custom-button.component";
 
-import { auth, createUserProfileDocument } from "../../firebase/firebase.utils";
-
 import './sign-up.styles.scss';
+import { signUpStart } from "../../redux/user/user.actions";
 
 class SignUp extends Component {
     constructor() {
@@ -16,12 +16,12 @@ class SignUp extends Component {
             email: '',
             password: '',
             confirmPassword: '',
-        }
+        };
     }
 
     handleSubmit = async event => {
         event.preventDefault();
-
+        const { signUpStart } = this.props;
         const { displayName, email, password, confirmPassword } = this.state;
 
         if (password !== confirmPassword) {
@@ -29,26 +29,14 @@ class SignUp extends Component {
             return;
         }
 
-        try {
-            const { user } = await auth.createUserWithEmailAndPassword(email, password);
-            await createUserProfileDocument(user, { displayName });
+        signUpStart({ email, password, displayName });
+    };
 
-            this.setState({
-                displayName: '',
-                email: '',
-                password: '',
-                confirmPassword: '',
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    hadleChange = (event) => {
+    handleChange = (event) => {
         const { name, value } = event.target;
 
         this.setState({ [name]: value });
-    }
+    };
 
     render() {
         const { displayName, email, password, confirmPassword } = this.state;
@@ -61,7 +49,7 @@ class SignUp extends Component {
                         type="text"
                         name="displayName"
                         value={displayName}
-                        onChange={this.hadleChange}
+                        onChange={this.handleChange}
                         label="Display Name"
                         required
                     />
@@ -69,7 +57,7 @@ class SignUp extends Component {
                         type="email"
                         name="email"
                         value={email}
-                        onChange={this.hadleChange}
+                        onChange={this.handleChange}
                         label="Email"
                         required
                     />
@@ -77,7 +65,7 @@ class SignUp extends Component {
                         type="password"
                         name="password"
                         value={password}
-                        onChange={this.hadleChange}
+                        onChange={this.handleChange}
                         label="Password"
                         required
                     />
@@ -85,7 +73,7 @@ class SignUp extends Component {
                         type="password"
                         name="confirmPassword"
                         value={confirmPassword}
-                        onChange={this.hadleChange}
+                        onChange={this.handleChange}
                         label="Confirm Password"
                         required
                     />
@@ -96,4 +84,8 @@ class SignUp extends Component {
     }
 }
 
-export default SignUp;
+const mapDispatchToProps = dispatch => ({
+    signUpStart: userCredentials => dispatch(signUpStart(userCredentials))
+});
+
+export default connect(null, mapDispatchToProps)(SignUp);
